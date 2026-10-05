@@ -1,0 +1,209 @@
+#innait-fp-modal,
+#innait-fppw-modal {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(15, 22, 32, 0.55);
+  backdrop-filter: blur(6px);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+#innait-fp-modal   { z-index: 10000; }
+#innait-fppw-modal { z-index: 10001; }
+
+@keyframes ifmIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+
+#innait-fp-modal   .ifm-head,
+#innait-fppw-modal .ifp-head {
+  background: linear-gradient(125deg, #003566 0%, #004C8F 40%, #ED232A 100%);
+  color: #ffffff;
+  padding: 14px 18px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+#innait-fp-modal   .ifm-head h3,
+#innait-fppw-modal .ifp-head h3 { margin: 0; font-size: 15px; font-weight: 800; }
+
+#innait-fp-modal   .ifm-x,
+#innait-fppw-modal .ifp-x {
+  background: rgba(255, 255, 255, 0.15); border: 0; color: #ffffff;
+  width: 28px; height: 28px; border-radius: 50%;
+  cursor: pointer; font-size: 16px; line-height: 0;
+  transition: all 0.2s;
+}
+#innait-fp-modal   .ifm-x:hover,
+#innait-fppw-modal .ifp-x:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+#innait-fp-modal .ifm-card {
+  background: #ffffff; border-radius: 14px;
+  width: min(420px, 92vw); max-height: 92vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: ifmIn 0.25s ease-out both;
+}
+
+#innait-fp-modal .ifm-body {
+  padding: 22px 20px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px;
+  color: #1f2937;
+}
+
+#innait-fp-modal .ifm-fp {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #dbeafe, #bfdbfe);
+  display: flex; align-items: center; justify-content: center;
+  animation: ifmPulse 1.6s ease-out infinite;
+}
+#innait-fp-modal .ifm-fp-img {
+  width: 64px; height: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 76, 143, 0.25));
+}
+@keyframes ifmPulse {
+  0%, 100% { box-shadow: 0 0 0 0  rgba(0, 76, 143, 0.5); }
+  50%      { box-shadow: 0 0 0 14px rgba(0, 76, 143, 0);  }
+}
+
+#innait-fp-modal .ifm-prompt {
+  font-size: 13px; text-align: center; color: #374151;
+}
+
+#innait-fp-modal .ifm-pct {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #004C8F 0%, #ED232A 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-variant-numeric: tabular-nums;
+}
+
+#innait-fp-modal .ifm-bar {
+  width: 100%; height: 6px;
+  background: #e5e7eb; border-radius: 99px; overflow: hidden;
+}
+#innait-fp-modal .ifm-bar > div {
+  height: 100%;
+  background: linear-gradient(90deg, #004C8F, #ED232A);
+  transition: width 0.3s;
+}
+
+#innait-fp-modal .ifm-card.ifm-success .ifm-head {
+  background: linear-gradient(125deg, #047857 0%, #059669 50%, #10b981 100%);
+}
+#innait-fp-modal .ifm-card.ifm-success .ifm-body {
+  padding: 32px 24px 24px;
+  gap: 16px;
+}
+
+#innait-fp-modal .ifm-check-tile {
+  width: 96px; height: 96px;
+  border-radius: 20px;
+  background: rgba(22, 163, 74, 0.14);
+  display: flex; align-items: center; justify-content: center;
+  animation: ifmGreenPulse 1.4s ease-out 2;
+}
+@keyframes ifmGreenPulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(22, 163, 74, 0.55); }
+  50%      { box-shadow: 0 0 0 16px rgba(22, 163, 74, 0);   }
+}
+
+#innait-fp-modal .ifm-check-tile svg {
+  width: 56px; height: 56px;
+  animation: ifmCheckIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.35));
+}
+@keyframes ifmCheckIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+#innait-fp-modal .ifm-success-text { text-align: center; }
+#innait-fp-modal .ifm-success-title {
+  color: #047857;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+#innait-fp-modal .ifm-success-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+#innait-fp-modal .ifm-verified-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+#innait-fp-modal .ifm-verified-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  animation: ifmDotPulse 1.4s ease-out infinite;
+}
+@keyframes ifmDotPulse {
+  0%, 100% { box-shadow: 0 0 0 0  rgba(16, 185, 129, 0.55); }
+  50%      { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);   }
+}
+
+#innait-fppw-modal .ifp-card {
+  background: #ffffff; border-radius: 14px;
+  width: min(420px, 92vw);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  animation: ifmIn 0.25s ease-out both;
+}
+
+#innait-fppw-modal .ifp-body {
+  padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+  color: #1f2937;
+}
+
+#innait-fppw-modal .ifp-prompt { font-size: 13px; color: #374151; }
+
+#innait-fppw-modal input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: ui-monospace, monospace;
+}
+#innait-fppw-modal input:focus {
+  outline: none;
+  border-color: #004C8F;
+  box-shadow: 0 0 0 3px rgba(0, 76, 143, 0.15);
+}
+
+#innait-fppw-modal .ifp-err { color: #b91c1c; font-size: 12px; min-height: 16px; }
+
+#innait-fppw-modal .ifp-actions {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 0 20px 18px;
+}
+#innait-fppw-modal .ifp-actions button {
+  padding: 8px 16px; border-radius: 6px; border: 0;
+  font-weight: 700; font-size: 13px; cursor: pointer;
+}
+#innait-fppw-modal .ifp-cancel { background: #e5e7eb; color: #374151; }
+#innait-fppw-modal .ifp-submit {
+  background: linear-gradient(135deg, #004C8F, #ED232A);
+  color: #ffffff;
+}
+#innait-fppw-modal .ifp-submit:disabled { opacity: 0.5; cursor: not-allowed; }

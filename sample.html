@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InnaITKey SDK V4 Auth — Sample</title>
+  <link rel="stylesheet" href="library/modals.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ik-card">
+    <header class="ik-head">
+      <div class="ik-emblem">i</div>
+      <div>
+        <h1>InnaITKey SDK V4</h1>
+        <p>Authentication Demo</p>
+      </div>
+    </header>
+
+    <div class="ik-body">
+      <section class="ik-section">
+        <span class="ik-label">Device</span>
+        <select id="discoveredSerialNumber"></select>
+        <div class="ik-device-actions">
+          <button type="button" id="lnkEnableHidDevice">Pair Device</button>
+          <button type="button" id="lnkRefreshDevice">Refresh</button>
+        </div>
+      </section>
+
+      <section class="ik-section">
+        <span class="ik-label">Authenticate</span>
+        <button type="button" id="authenticateBtn">Authenticate</button>
+      </section>
+
+      <section class="ik-response">
+        <span class="ik-label">Authenticate Response</span>
+        <pre id="returnValue"></pre>
+      </section>
+
+      <hr class="ik-divider" />
+
+      <section class="ik-section">
+        <span class="ik-label">Get Token</span>
+        <button type="button" id="getTokenBtn">Get Token</button>
+      </section>
+
+      <section class="ik-response">
+        <span class="ik-label">Token — Full Response</span>
+        <pre id="tokenReturnValue"></pre>
+        <span class="ik-label">Token — Payload</span>
+        <pre id="tokenPayloadValue"></pre>
+      </section>
+
+      <!-- Shown only after a successful Get Token. Reuses the stored
+           refresh_token + code to mint a fresh access_token, no re-auth. -->
+      <section class="ik-section" id="refreshTokenSection" style="display:none;">
+        <span class="ik-label">Refresh Token</span>
+        <button type="button" id="refreshTokenBtn">Refresh Token</button>
+      </section>
+
+      <section class="ik-response" id="refreshResponseSection" style="display:none;">
+        <span class="ik-label">Refresh — Full Response</span>
+        <pre id="refreshReturnValue"></pre>
+        <span class="ik-label">Refresh — Payload</span>
+        <pre id="refreshPayloadValue"></pre>
+      </section>
+    </div>
+
+    <footer class="ik-foot">Powered by InnaIT · Secure Device Authentication</footer>
+  </div>
+
+  <script src="library/utils.js"></script>
+  <script src="library/config.js"></script>
+  <script src="library/fetchApi.js"></script>
+  <script src="library/eventSource.js"></script>
+  <script src="library/webSocket.js"></script>
+  <script src="library/webHid.js"></script>
+  <script src="library/driverHid.js"></script>
+  <script src="library/fpModal.js"></script>
+  <script src="library/fpPasswordModal.js"></script>
+  <script src="library/deviceHandler.js"></script>
+
+  <script src="actions.js"></script>
+
+  <script type="text/javascript">
+    var selectSlNoDropDownId = document.getElementById('discoveredSerialNumber'),
+        pairDeviceBtnId      = document.getElementById('lnkEnableHidDevice'),
+        refreshBtnId         = document.getElementById('lnkRefreshDevice'),
+        authenticateBtnId    = document.getElementById('authenticateBtn'),
+        getTokenBtnId        = document.getElementById('getTokenBtn'),
+        returnValueId        = document.getElementById('returnValue'),
+        tokenReturnValueId   = document.getElementById('tokenReturnValue'),
+        tokenPayloadValueId  = document.getElementById('tokenPayloadValue'),
+        refreshTokenSection  = document.getElementById('refreshTokenSection'),
+        refreshTokenBtnId    = document.getElementById('refreshTokenBtn'),
+        refreshResponseSection = document.getElementById('refreshResponseSection'),
+        refreshReturnValueId = document.getElementById('refreshReturnValue'),
+        refreshPayloadValueId = document.getElementById('refreshPayloadValue');
+
+    var lastAuthCode = '';
+    var lastRefreshToken = '';
+
+    removeLS('hidDiscoveredList');
+
+    selectSlNoDropDownId.innerHTML = '';
+    selectSlNoDropDownId.options.add(new Option('Select device', '0'));
+
+    if ('hid' in navigator) {
+      pairDeviceBtnId.onclick = function () { requestHidDevice(); };
+    } else {
+      refreshBtnId.onclick = function () {
+        deviceHandler.initNonWebHidDriver();
+        authenticatorStatusHandler();
+      };
+    }
+
+    function setLoading(btn, isLoading, loadingText) {
+      if (isLoading) {
+        btn.dataset.label = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = loadingText;
+      } else {
+        btn.disabled = false;
+        if (btn.dataset.label) btn.textContent = btn.dataset.label;
+      }
+    }
+
+    authenticateBtnId.onclick = function () {
+      if (selectSlNoDropDownId.value == '0') { alert('Select device'); return; }
+      setLoading(authenticateBtnId, true, 'Authenticating…');
+      authenticateWithInnaitKey(selectSlNoDropDownId.value, function (response) {
+        returnValueId.textContent = JSON.stringify(response, null, 2);
+        lastAuthCode = extractAuthCode(response);
+        setLoading(authenticateBtnId, false);
+      });
+    };
+
+    getTokenBtnId.onclick = function () {
+      if (!lastAuthCode) { alert('Authenticate first to get a code'); return; }
+      setLoading(getTokenBtnId, true, 'Getting token…');
+      getToken(lastAuthCode, function (res) {
+        // Box 1: full token response.
+        tokenReturnValueId.textContent = JSON.stringify(res, null, 2);
+        // Box 2: idam-bank-style 5-line summary from the decoded access_token.
+        var payload = {};
+        try { payload = JSON.parse(atob(res.access_token.split('.')[1])); } catch (e) {}
+        var ok = !!(res && res.access_token);
+        tokenPayloadValueId.textContent =
+          'Errorcode: ' + (ok ? '0' : '1') + '\n' +
+          'Errormsg: '  + (ok ? 'Successfully Authenticated' : ((res && res.errorMessage) || 'Get token failed')) + '\n' +
+          'Event: TFA\n' +
+          'Token: '     + (lastAuthCode) + '\n' +
+          'UserID: '    + (payload.loginName);
+        // Capture the refresh_token and reveal the Refresh Token button.
+        lastRefreshToken = (res && res.refresh_token) ? res.refresh_token : '';
+        if (lastRefreshToken) refreshTokenSection.style.display = '';
+        setLoading(getTokenBtnId, false);
+      });
+    };
+
+    refreshTokenBtnId.onclick = function () {
+      if (!lastAuthCode || !lastRefreshToken) { alert('Get token first'); return; }
+      setLoading(refreshTokenBtnId, true, 'Refreshing…');
+      refreshToken(lastAuthCode, lastRefreshToken, function (res) {
+        refreshResponseSection.style.display = '';
+        // Box 1: full refresh response.
+        refreshReturnValueId.textContent = JSON.stringify(res, null, 2);
+        // Box 2: idam-bank-style 5-line summary from the decoded access_token.
+        var payload = {};
+        try { payload = JSON.parse(atob(res.access_token.split('.')[1])); } catch (e) {}
+        var ok = !!(res && res.access_token);
+        refreshPayloadValueId.textContent =
+          'Errorcode: ' + (ok ? '0' : '1') + '\n' +
+          'Errormsg: '  + (ok ? 'Successfully Refreshed' : ((res && res.errorMessage) || 'Refresh failed')) + '\n' +
+          'Event: TFA\n' +
+          'Token: '     + (lastAuthCode) + '\n' +
+          'UserID: '    + (payload.loginName);
+        // Server may (or may not) rotate the refresh_token — keep the newest.
+        if (res && res.refresh_token) lastRefreshToken = res.refresh_token;
+        setLoading(refreshTokenBtnId, false);
+      });
+    };
+
+    function authenticatorStatusHandler() {
+      selectSlNoDropDownId.innerHTML = '';
+      selectSlNoDropDownId.options.add(new Option('Select device', '0'));
+
+      var connectedInnaitKeyList = deviceHandler.getList();
+      if (connectedInnaitKeyList != undefined) {
+        for (var i = 0; i < connectedInnaitKeyList.length; i++) {
+          selectSlNoDropDownId.options.add(
+            new Option(connectedInnaitKeyList[i].serialNumber, connectedInnaitKeyList[i].serialNumber));
+        }
+        if (connectedInnaitKeyList.length == 1) {
+          selectSlNoDropDownId.value = connectedInnaitKeyList[0].serialNumber;
+        }
+      }
+    }
+
+    // Default config — eventType '1' (SSE), encryption CRYPTO_NONE.
+    deviceHandler.init('CRYPTO_NONE', '1', undefined,
+                       authenticatorStatusHandler, false, true,
+                       'hid' in navigator ? true : false);
+
+    deviceHandler.initNonWebHidDriver();
+  </script>
+</body>
+</html>
