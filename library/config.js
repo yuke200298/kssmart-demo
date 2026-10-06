@@ -2,7 +2,7 @@ var driver_serverApiUrl = 'https://10.225.247.17';
 var driver_projectId    = 'innaitidam';
 var driver_clientId     = '6ac39a1ec2e8251e3ad5ad68'; 
 var driver_clientSecret = 'jfom-iOM_tkCZ3uGccr-T1zA-1XFaabSLYq4ZBJgW60';
-var driver_redirectUri  = 'https://10.225.247.17/Home';
+var driver_redirectUri  = 'https://yuke200298.github.io/kssmart-demo/sample.html';
 
 var driver_serverEventSourceUrl;
 var driver_serverWsUrl;
